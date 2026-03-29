@@ -1,0 +1,403 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model announcements {
+  id         Int       @id @default(autoincrement())
+  school_id  Int?
+  title      String?   @db.VarChar(255)
+  message    String?
+  created_by Int?
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  schools    schools?  @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model attendance {
+  id         Int       @id @default(autoincrement())
+  student_id Int?
+  school_id  Int?
+  teacher_id Int?
+  date       DateTime? @db.Date
+  status     String?   @db.VarChar(20)
+  marked_at  DateTime? @default(now()) @db.Timestamp(6)
+  schools    schools?  @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  students   students? @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  teachers   teachers? @relation(fields: [teacher_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model coin_config {
+  id              Int       @id @default(autoincrement())
+  coins_per_rupee Int?
+  updated_by      Int?
+  updated_at      DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model exam_subjects {
+  id         Int       @id @default(autoincrement())
+  exam_id    Int?
+  subject_id Int?
+  max_marks  Int?
+  exams      exams?    @relation(fields: [exam_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subjects   subjects? @relation(fields: [subject_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model exam_terms {
+  id        Int      @id @default(autoincrement())
+  school_id Int?
+  name      String?  @db.VarChar(100)
+  schools   schools? @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  exams     exams[]
+}
+
+model exams {
+  id            Int             @id @default(autoincrement())
+  name          String?         @db.VarChar(100)
+  school_id     Int?
+  standard_id   Int?
+  exam_term_id  Int?
+  exam_subjects exam_subjects[]
+  exam_terms    exam_terms?     @relation(fields: [exam_term_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  schools       schools?        @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  standards     standards?      @relation(fields: [standard_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  marks         marks[]
+  report_cards  report_cards[]
+}
+
+model generated_documents {
+  id            Int       @id @default(autoincrement())
+  document_type String?   @db.VarChar(50)
+  entity_type   String?   @db.VarChar(50)
+  entity_id     Int?
+  school_id     Int?
+  generated_by  Int?
+  file_url      String?
+  metadata      Json?
+  created_at    DateTime? @default(now()) @db.Timestamp(6)
+  schools       schools?  @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model holidays {
+  id         Int       @id @default(autoincrement())
+  school_id  Int?
+  title      String?   @db.VarChar(255)
+  date       DateTime? @db.Date
+  type       String?   @db.VarChar(50)
+  created_by Int?
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  schools    schools?  @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model homework {
+  id          Int        @id @default(autoincrement())
+  title       String?    @db.VarChar(255)
+  description String?
+  subject_id  Int?
+  teacher_id  Int?
+  standard_id Int?
+  section_id  Int?
+  due_date    DateTime?  @db.Date
+  created_at  DateTime?  @default(now()) @db.Timestamp(6)
+  sections    sections?  @relation(fields: [section_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  standards   standards? @relation(fields: [standard_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subjects    subjects?  @relation(fields: [subject_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  teachers    teachers?  @relation(fields: [teacher_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model marks {
+  id         Int       @id @default(autoincrement())
+  student_id Int?
+  subject_id Int?
+  exam_id    Int?
+  marks      Int?
+  is_locked  Boolean?  @default(false)
+  entered_by Int?
+  locked_by  Int?
+  updated_at DateTime? @default(now()) @db.Timestamp(6)
+  exams      exams?    @relation(fields: [exam_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  students   students? @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subjects   subjects? @relation(fields: [subject_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([student_id], map: "idx_marks_student")
+}
+
+model notification_recipients {
+  id              Int            @id @default(autoincrement())
+  notification_id Int?
+  user_id         Int?
+  user_role       String?        @db.VarChar(50)
+  is_read         Boolean?       @default(false)
+  read_at         DateTime?      @db.Timestamp(6)
+  notifications   notifications? @relation(fields: [notification_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users           users?         @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model notifications {
+  id                      Int                       @id @default(autoincrement())
+  title                   String?                   @db.VarChar(255)
+  message                 String?
+  type                    String?                   @db.VarChar(50)
+  sender_id               Int?
+  sender_role             String?                   @db.VarChar(50)
+  created_at              DateTime?                 @default(now()) @db.Timestamp(6)
+  notification_recipients notification_recipients[]
+}
+
+model parent_students {
+  id         Int      @id @default(autoincrement())
+  parent_id  Int?
+  student_id Int?
+  parents    parents? @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model parents {
+  id              Int               @id @default(autoincrement())
+  user_id         Int?              @unique
+  parent_students parent_students[]
+  users           users?            @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model payments {
+  id             Int       @id @default(autoincrement())
+  school_id      Int?
+  student_id     Int?
+  amount         Int?
+  type           String?   @db.VarChar(50)
+  method         String?   @db.VarChar(50)
+  status         String?   @db.VarChar(50)
+  transaction_id String?   @db.VarChar(255)
+  created_at     DateTime? @default(now()) @db.Timestamp(6)
+  schools        schools?  @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  students       students? @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model report_cards {
+  id           Int        @id @default(autoincrement())
+  student_id   Int?
+  exam_id      Int?
+  school_id    Int?
+  standard_id  Int?
+  type         String?    @db.VarChar(50)
+  total        Int?
+  percentage   Float?
+  is_finalized Boolean?   @default(false)
+  generated_at DateTime?  @default(now()) @db.Timestamp(6)
+  exams        exams?     @relation(fields: [exam_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  schools      schools?   @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  standards    standards? @relation(fields: [standard_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  students     students?  @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model schools {
+  id                  Int                   @id @default(autoincrement())
+  name                String                @db.VarChar(255)
+  address             String?
+  latitude            Float?
+  longitude           Float?
+  geo_radius_meters   Int?
+  status              String?               @default("active") @db.VarChar
+  created_at          DateTime?             @default(now()) @db.Timestamp(6)
+  announcements       announcements[]
+  attendance          attendance[]
+  exam_terms          exam_terms[]
+  exams               exams[]
+  generated_documents generated_documents[]
+  holidays            holidays[]
+  payments            payments[]
+  report_cards        report_cards[]
+  standards           standards[]
+  students            students[]
+  teacher_assignments teacher_assignments[]
+  teacher_attendance  teacher_attendance[]
+  teachers            teachers[]
+  users               users[]
+  wallet_transactions wallet_transactions[]
+  wallets             wallets?
+}
+
+model sections {
+  id                  Int                   @id @default(autoincrement())
+  standard_id         Int?
+  name                String?               @db.VarChar(50)
+  class_teacher_id    Int?
+  homework            homework[]
+  standards           standards?            @relation(fields: [standard_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  students            students[]
+  teacher_assignments teacher_assignments[]
+}
+
+model standards {
+  id                  Int                   @id @default(autoincrement())
+  school_id           Int?
+  name                String                @db.VarChar(50)
+  exams               exams[]
+  homework            homework[]
+  report_cards        report_cards[]
+  sections            sections[]
+  schools             schools?              @relation(fields: [school_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  students            students[]
+  teacher_assignments teacher_assignments[]
+}
+
+model students {
+  id                Int            @id @default(autoincrement())
+  user_id           Int?
+  student_id        String?        @unique @db.VarChar(50)
+  school_id         Int?
+  first_name        String?        @db.VarChar(100)
+  last_name         String?        @db.VarChar(100)
+  blood_group       String?        @db.VarChar(10)
+  dob               DateTime?      @db.Date
+  mobile            String?        @db.VarChar(15)
+  email             String?        @db.VarChar(255)
+  address_line      String?
+  pincode           String?        @db.VarChar(10)
+  city              String?        @db.VarChar(100)
+  state             String?        @db.VarChar(100)
+  profile_photo_url String?
+  standard_id       Int?
+  section_id        Int?
+  medium            String?        @db.VarChar(50)
+  roll_number       Int?
+  father_name       String?        @db.VarChar(100)
+  father_mobile     String?        @db.VarChar(15)
+  mother_name       String?        @db.VarChar(100)
+  mother_mobile     String?        @db.VarChar(15)
+  guardian_name     String?        @db.VarChar(100)
+  guardian_relation String?        @db.VarChar(50)
+  guardian_mobile   String?        @db.VarChar(15)
+  status            String?        @default("active") @db.VarChar
+  created_at        DateTime?      @default(now()) @db.Timestamp(6)
+  attendance        attendance[]
+  marks             marks[]
+  payments          payments[]
+  report_cards      report_cards[]
+  schools           schools?       @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  sections          sections?      @relation(fields: [section_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  standards         standards?     @relation(fields: [standard_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users             users?         @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@index([school_id], map: "idx_student_school")
+}
+
+model subjects {
+  id                  Int                   @id @default(autoincrement())
+  name                String                @db.VarChar(100)
+  exam_subjects       exam_subjects[]
+  homework            homework[]
+  marks               marks[]
+  teacher_assignments teacher_assignments[]
+}
+
+model teacher_assignments {
+  id          Int        @id @default(autoincrement())
+  teacher_id  Int?
+  school_id   Int?
+  standard_id Int?
+  section_id  Int?
+  subject_id  Int?
+  schools     schools?   @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  sections    sections?  @relation(fields: [section_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  standards   standards? @relation(fields: [standard_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subjects    subjects?  @relation(fields: [subject_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  teachers    teachers?  @relation(fields: [teacher_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model teacher_attendance {
+  id             Int       @id @default(autoincrement())
+  teacher_id     Int?
+  school_id      Int?
+  date           DateTime? @db.Date
+  status         String?   @db.VarChar(20)
+  method         String?   @db.VarChar(50)
+  checked_in_lat Float?
+  checked_in_lng Float?
+  marked_at      DateTime? @default(now()) @db.Timestamp(6)
+  schools        schools?  @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  teachers       teachers? @relation(fields: [teacher_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model teachers {
+  id                  Int                   @id @default(autoincrement())
+  user_id             Int?                  @unique
+  school_id           Int?
+  status              String?               @default("active") @db.VarChar
+  attendance          attendance[]
+  homework            homework[]
+  teacher_assignments teacher_assignments[]
+  teacher_attendance  teacher_attendance[]
+  schools             schools?              @relation(fields: [school_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users               users?                @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model transfers {
+  id              Int       @id @default(autoincrement())
+  entity_type     String?   @db.VarChar(50)
+  entity_id       Int?
+  from_school_id  Int?
+  to_school_id    Int?
+  status          String?   @db.VarChar(50)
+  initiated_by    Int?
+  transfer_date   DateTime? @db.Date
+  certificate_url String?
+  notes           String?
+  created_at      DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model users {
+  id                      Int                       @id @default(autoincrement())
+  name                    String                    @db.VarChar(255)
+  email                   String                    @unique @db.VarChar(255)
+  password                String
+  role                    user_role
+  school_id               Int?
+  created_at              DateTime?                 @default(now()) @db.Timestamp(6)
+  notification_recipients notification_recipients[]
+  parents                 parents?
+  students                students[]
+  teachers                teachers?
+  schools                 schools?                  @relation(fields: [school_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@index([email], map: "idx_user_email")
+}
+
+model wallet_transactions {
+  id         Int       @id @default(autoincrement())
+  school_id  Int?
+  amount     Int?
+  type       String?   @db.VarChar(50)
+  reason     String?
+  payment_id Int?
+  created_at DateTime? @default(now()) @db.Timestamp(6)
+  schools    schools?  @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model wallets {
+  id         Int       @id @default(autoincrement())
+  school_id  Int?      @unique
+  balance    Int?      @default(0)
+  updated_at DateTime? @default(now()) @db.Timestamp(6)
+  schools    schools?  @relation(fields: [school_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+enum attendance_status {
+  present
+  absent
+  late
+}
+
+enum status_type {
+  active
+  inactive
+  suspended
+}
+
+enum user_role {
+  admin
+  teacher
+  parent
+}
