@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client"
+  provider = "prisma-client-js"
   output   = "../generated/prisma"
 }
 
@@ -155,10 +155,14 @@ model parent_students {
 }
 
 model parents {
+
   id              Int               @id @default(autoincrement())
   user_id         Int?              @unique
+  school_id       Int?
+  status          String?           @default("active")
   parent_students parent_students[]
-  users           users?            @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  schools         schools?          @relation(fields: [school_id],references: [id],onDelete: Cascade,onUpdate: NoAction)
+  users           users?            @relation(fields: [user_id],references: [id],onDelete: Cascade,onUpdate: NoAction)
 }
 
 model payments {
@@ -208,6 +212,7 @@ model schools {
   generated_documents generated_documents[]
   holidays            holidays[]
   payments            payments[]
+  parents             parents[]
   report_cards        report_cards[]
   standards           standards[]
   students            students[]
@@ -397,7 +402,8 @@ enum status_type {
 }
 
 enum user_role {
-  admin
-  teacher
-  parent
+  SUPER_ADMIN
+  SCHOOL_ADMIN
+  TEACHER
+  PARENT
 }
