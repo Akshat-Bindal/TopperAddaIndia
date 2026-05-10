@@ -233,6 +233,7 @@ model sections {
   standards           standards?            @relation(fields: [standard_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   students            students[]
   teacher_assignments teacher_assignments[]
+  status              String?    @default("active")
 }
 
 model standards {
@@ -245,6 +246,7 @@ model standards {
   sections            sections[]
   schools             schools?              @relation(fields: [school_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
   students            students[]
+  status              String?               @default("active")
   teacher_assignments teacher_assignments[]
 }
 
