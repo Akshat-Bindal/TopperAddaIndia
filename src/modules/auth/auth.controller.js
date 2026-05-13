@@ -1,5 +1,5 @@
 import {registerSchoolAdmin} from "./auth.service.js";
-import { loginUser } from "./auth.service.js";
+import { loginService } from "./auth.service.js";
 
 export const registerSchool = async (req, res) => {
     try{
@@ -20,7 +20,7 @@ export const registerSchool = async (req, res) => {
 
 export const login=async(req,res)=>{
     try{
-        const result=await loginUser(req.body);
+        const result=await loginService(req.body);
 
         return res.status(200).json({
             success:true,

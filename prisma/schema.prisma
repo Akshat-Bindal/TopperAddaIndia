@@ -152,6 +152,7 @@ model parent_students {
   parent_id  Int?
   student_id Int?
   parents    parents? @relation(fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  students   students?  @relation(fields: [student_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
 
 model parents {
@@ -260,7 +261,8 @@ model students {
   blood_group       String?        @db.VarChar(10)
   dob               DateTime?      @db.Date
   mobile            String?        @db.VarChar(15)
-  email             String?        @db.VarChar(255)
+  email             String?        @db.VarChar(255) 
+  gender            String?        @db.VarChar(20)
   address_line      String?
   pincode           String?        @db.VarChar(10)
   city              String?        @db.VarChar(100)
@@ -287,6 +289,7 @@ model students {
   sections          sections?      @relation(fields: [section_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   standards         standards?     @relation(fields: [standard_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   users             users?         @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  parent_students   parent_students[]
 
   @@index([school_id], map: "idx_student_school")
 }
@@ -408,4 +411,5 @@ enum user_role {
   SCHOOL_ADMIN
   TEACHER
   PARENT
+  STUDENT
 }
